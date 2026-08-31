@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Experiment artifacts
+data/
+runs/
+runs_*/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.npz
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store

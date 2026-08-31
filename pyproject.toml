@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "curvature-cryptanalysis"
+version = "0.1.0"
+description = "Shared-stencil curvature extraction of smooth transformer FFNs"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [
+  {name = "Munawar Hasan"},
+  {name = "Apostol Vassilev"},
+]
+keywords = [
+  "model extraction",
+  "transformers",
+  "cryptanalysis",
+  "finite differences",
+  "GELU",
+  "SiLU",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "numpy>=1.24,<3",
+  "scipy>=1.10,<2",
+  "torch>=2.1",
+  "torchvision>=0.16",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "ruff>=0.6"]
+
+[project.urls]
+Homepage = "https://github.com/mhasan08/curvature-cryptanalysis"
+Repository = "https://github.com/mhasan08/curvature-cryptanalysis"
+Issues = "https://github.com/mhasan08/curvature-cryptanalysis/issues"
+
+[project.scripts]
+curvature-cryptanalysis = "curvature_cryptanalysis.pipeline:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
