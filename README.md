@@ -1,5 +1,6 @@
 # Curvature Cryptanalysis of Smooth Transformer FFNs
 
+[![arXiv](https://img.shields.io/badge/arXiv-2608.28843-b31b1b.svg)](https://arxiv.org/abs/2608.28843)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
