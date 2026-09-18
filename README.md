@@ -30,34 +30,61 @@ The unshared baseline would spend $16\times8{,}193=131{,}088$ structural queries
 
 ## Results
 
-Mean ± standard deviation across three independently trained CIFAR-10 victims:
+Mean ± sample standard deviation across three independently trained CIFAR-10
+victim models. Each experiment uses \(T=16\) projected Hessians and 12,000
+completion queries.
+
+### Query budgets
+
+| Attack configuration | Structural queries | Completion queries | Total queries |
+|---|---:|---:|---:|
+| Optimized shared stencil | 8,193 | 12,000 | 20,193 |
+| Unoptimized separate stencils | 131,088 | 12,000 | 143,088 |
+
+The optimized attack evaluates one shared vector-output finite-difference
+stencil and constructs all 16 projected Hessians offline. The unoptimized
+version evaluates a separate stencil for each projection. This reduces the
+structural query count by \(16\times\).
+
+### Optimized shared-stencil results
+
+| Activation | Direction recovery | Victim accuracy | Surrogate accuracy | Target–surrogate agreement |
+|---|---:|---:|---:|---:|
+| GELU | 0.9187 ± 0.0138 | 79.18 ± 0.36% | 77.94 ± 0.47% | 92.81 ± 0.22% |
+| SiLU | 0.9402 ± 0.0119 | 78.18 ± 0.49% | 77.61 ± 0.49% | 94.97 ± 0.36% |
+
+### Unoptimized separate-stencil results
 
 | Activation | Direction recovery | Victim accuracy | Surrogate accuracy | Target–surrogate agreement |
 |---|---:|---:|---:|---:|
 | GELU | 0.9644 ± 0.0026 | 79.18 ± 0.36% | 78.28 ± 0.35% | 93.24 ± 0.45% |
 | SiLU | 0.9476 ± 0.0022 | 78.18 ± 0.49% | 77.57 ± 0.41% | 94.89 ± 0.40% |
 
-The exact aggregate values are also recorded in [`results/main_results.csv`](results/main_results.csv). The included figures report the finite-difference, projection-count, and completion-budget ablations.
+The shared-stencil configuration substantially reduces the query cost while
+preserving strong structural recovery and functional agreement. Its
+single-probe measurements may contain less curvature information for some
+hidden units than the multiple stencils used by the unoptimized configuration,
+which explains the lower GELU direction-recovery value.
 
-### Finite-difference step
+### Optimized versus unoptimized extraction
 
-![Directional recovery versus finite-difference step](figures/fd_step_sensitivity.png)
+Mean ± sample standard deviation across three independently trained CIFAR-10
+victim models. Both configurations use \(T=16\) projected Hessians and 12,000
+completion queries.
 
-The selected finite-difference step is $h=10^{-2}$, where recovery has reached the stable high-recovery regime for both smooth activations.
+| Configuration | Activation | Structural queries | Direction recovery | Victim accuracy | Surrogate accuracy | Agreement |
+|---|---|---:|---:|---:|---:|---:|
+| Optimized shared stencil | GELU | 8,193 | 0.9187 ± 0.0138 | 79.18 ± 0.36% | 77.94 ± 0.47% | 92.81 ± 0.22% |
+| Optimized shared stencil | SiLU | 8,193 | 0.9402 ± 0.0119 | 78.18 ± 0.49% | 77.61 ± 0.49% | 94.97 ± 0.36% |
+| Unoptimized separate stencils | GELU | 131,088 | 0.9644 ± 0.0026 | 79.18 ± 0.36% | 78.28 ± 0.35% | 93.24 ± 0.45% |
+| Unoptimized separate stencils | SiLU | 131,088 | 0.9476 ± 0.0022 | 78.18 ± 0.49% | 77.57 ± 0.41% | 94.89 ± 0.40% |
 
-### Number of projected Hessians
-
-![Directional recovery versus projected Hessian count](figures/projection_count_ablation.png)
-
-$T=16$ captures most of the recovery improvement. Under the optimized $P=1$ configuration, increasing $T$ changes offline computation but not the 8,193 structural oracle calls, provided the oracle returns the complete output vector.
-
-### Completion-query budget
-
-![Target-surrogate agreement versus completion queries](figures/completion_agreement.png)
-
-![Accuracy drop versus completion queries](figures/completion_accuracy_drop.png)
-
-$Q_{\mathrm{fit}}=12{,}000$ is selected near the observed point of diminishing returns.
+The optimized attack reuses one vector-output finite-difference stencil to
+construct all 16 projected Hessians offline. This reduces the structural query
+cost by 16X, from 131,088 to 8,193 queries. The lower GELU direction
+recovery reflects the reduced probe diversity of the single-stencil setting,
+while functional replacement remains strong. For SiLU, surrogate accuracy and
+agreement improve slightly despite the lower query budget.
 
 ## Installation
 
@@ -124,13 +151,45 @@ The implementation performs an internal accounting check and aborts if the measu
 
 ```text
 curvature-cryptanalysis/
-├── src/curvature_cryptanalysis/   # Attack, completion and evaluation pipeline
-├── scripts/                       # Reproduction and budget utilities
-├── tests/                         # Lightweight accounting tests
+├── src/curvature_cryptanalysis/   # Original separate-stencil implementation
+├── scripts/                       # Original reproduction and budget utilities
+├── tests/                         # Tests for the original implementation
 ├── figures/                       # Paper-quality ablation figures
-├── results/                       # Reported aggregate results
-└── docs/                          # Algorithm and checkpoint docs
+├── results/                       # Original aggregate results
+├── docs/                          # Checkpoint-format documentation
+│
+├── optimized/                     # Optimized shared-stencil release
+│   ├── checkpoints/               # Six trained CIFAR-10 victim checkpoints
+│   ├── src/curvature_cryptanalysis/
+│   │                              # Shared-stencil extraction pipeline
+│   ├── scripts/                   # Reproduction, aggregation, and budget utilities
+│   ├── tests/                     # Shared-stencil query-accounting tests
+│   ├── results/
+│   │   ├── main_results.csv       # Aggregated optimized results
+│   │   └── shared_runs/           # Per-victim result records and recovery arrays
+│   ├── docs/                      # Checkpoint-format documentation
+│   ├── pyproject.toml
+│   └── README.txt
+│
+├── pyproject.toml                 # Original package configuration
+├── requirements.txt              # Python dependencies
+├── LICENSE
+└── README.md
 ```
+
+The repository root retains the original separate-stencil implementation and
+reported results. The [`optimized/`](optimized/) directory contains the
+shared-stencil implementation, trained victim checkpoints, and complete result
+records for the optimized experiments.
+
+For \(d=64\) and \(T=16\), the original implementation evaluates a separate
+finite-difference stencil for each projected Hessian, requiring 131,088
+structural queries. The optimized implementation reuses one vector-output
+stencil to construct all 16 projected Hessians offline, reducing the structural
+query count to 8,193. With 12,000 completion queries, the corresponding total
+budgets are 143,088 and 20,193 queries, respectively.
+
+
 
 ## Method and threat model
 
