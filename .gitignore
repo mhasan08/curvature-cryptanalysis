@@ -9,13 +9,6 @@ venv/
 
 # Experiment artifacts
 data/
-runs/
-runs_*/
-checkpoints/
-*.pt
-*.pth
-*.ckpt
-*.npz
 
 # Editors and operating systems
 .idea/
